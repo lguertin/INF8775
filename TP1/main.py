@@ -5,6 +5,17 @@ def mat_print(m):
     for row in m:
         print("\t".join(map(str,row)))
 
+# Lire la matrice depuis le fichier
+def mat_load(m):
+    f = open(m, "r")
+    t = []
+    Ne1 = int(f.readline())
+    for i in range(int(math.pow(2,Ne1))):
+        line = f.readline().split('\t')
+        t.append(list(map(int, line[0:len(line)-1])))
+    return t
+    f.close()
+
 # Addition de deux matrices
 def mat_add(a, b):
     N = len(a)
@@ -53,7 +64,6 @@ def mat_mul_strassen(a, b, threshold):
                 a01[i][j] = a[i][j + N]
                 a10[i][j] = a[i + N][j]
                 a11[i][j] = a[i + N][j + N]
-
                 b00[i][j] = b[i][j]
                 b01[i][j] = b[i][j + N]
                 b10[i][j] = b[i + N][j]
@@ -87,26 +97,17 @@ def mat_mul_strassen(a, b, threshold):
         m7 = a[1][1] * (b[0][0] + b[1][1] - b[0][1] - b[1][0])
         return [[m2 + m3, m1 + m2 + m5 + m6], [m1 + m2 + m4 - m7, m1 + m2 + m4 + m5]]
 
+# Main
 if __name__=="__main__":
+
     algo = sys.argv[sys.argv.index("-a") + 1]
     e1 = sys.argv[sys.argv.index("-e1") + 1]
     e2 = sys.argv[sys.argv.index("-e2") + 1]
-    fe1 = open(e1, "r")
-    a = []
-    Ne1 = int(fe1.readline())
-    for i in range(int(math.pow(2,Ne1))):
-        line = fe1.readline().split('\t')
-        a.append(list(map(int, line[0:len(line)-1])))
-    fe1.close()
-    fe2 = open(e2, "r")
-    b = []
-    Ne2 = int(fe2.readline())
-    for i in range(int(math.pow(2,Ne2))):
-        line = fe2.readline().split('\t')
-        b.append(list(map(int, line[0:len(line)-1])))
-    fe2.close()
-    begin = time.time()
 
+    a = mat_load(e1)
+    b = mat_load(e2)
+
+    begin = time.time()
     if algo == "conv":
         c = mat_mul_conventionnal(a, b)
     elif algo == "strassen":
@@ -114,8 +115,8 @@ if __name__=="__main__":
     else:
         c = mat_mul_strassen(a, b, 8)
 
-    if sys.argv.count("-p"):
-        mat_print(c)
-
     if sys.argv.count("-t"):
         print((time.time() - begin) * 1000)
+
+    if sys.argv.count("-p"):
+        mat_print(c)
