@@ -1,4 +1,5 @@
 import math, sys, time
+import numpy
 
 # Afficher une matrice
 def mat_print(m):
@@ -13,13 +14,15 @@ def mat_load(m):
     for i in range(int(math.pow(2,Ne1))):
         line = f.readline().split('\t')
         t.append(list(map(int, line[0:len(line)-1])))
-    return t
     f.close()
+
+    t = numpy.array(t)
+    return t
 
 # Addition de deux matrices
 def mat_add(a, b):
     N = len(a)
-    c = [[0 for i in range(N)] for j in range(N)]
+    c = numpy.zeros((N, N))
     for i in range(N):    
         for j in range(N):
             c[i][j] = a[i][j] + b[i][j]
@@ -28,7 +31,7 @@ def mat_add(a, b):
 # Soustraction de deux matrices
 def mat_sub(a, b):
     N = len(a)
-    c = [[0 for i in range(N)] for j in range(N)]
+    c = numpy.zeros((N, N))
     for i in range(N):    
         for j in range(N):
             c[i][j] = a[i][j] - b[i][j]
@@ -37,7 +40,7 @@ def mat_sub(a, b):
 # Multiplication conventionnelle de deux matrices
 def mat_mul_conventionnal(a, b):
     N = len(a)
-    c = [[0 for i in range(N)] for j in range(N)] 
+    c = numpy.zeros((N, N))
     for i in range(N):
         for j in range(N):
             for k in range(N):
@@ -49,25 +52,19 @@ def mat_mul_strassen(a, b, threshold):
     if len(a) <= threshold:
         return mat_mul_conventionnal(a, b)
     elif len(a) > 2 :
-        N = int(len(a)/2)
-        a00 = [[0 for i in range(N)] for j in range(N)]
-        a01 = [[0 for i in range(N)] for j in range(N)]
-        a10 = [[0 for i in range(N)] for j in range(N)]
-        a11 = [[0 for i in range(N)] for j in range(N)]
-        b00 = [[0 for i in range(N)] for j in range(N)]
-        b01 = [[0 for i in range(N)] for j in range(N)]
-        b10 = [[0 for i in range(N)] for j in range(N)]
-        b11 = [[0 for i in range(N)] for j in range(N)]
-        for i in range(N):
-            for j in range(N):
-                a00[i][j] = a[i][j]
-                a01[i][j] = a[i][j + N]
-                a10[i][j] = a[i + N][j]
-                a11[i][j] = a[i + N][j + N]
-                b00[i][j] = b[i][j]
-                b01[i][j] = b[i][j + N]
-                b10[i][j] = b[i + N][j]
-                b11[i][j] = b[i + N][j + N]
+        N = len(a)
+        N_2 = int(N/2)
+
+        a00 = a[0:N_2, 0:N_2]
+        a01 = a[0:N_2, N_2:N]
+        a10 = a[N_2:N, 0:N_2]
+        a11 = a[N_2:N, N_2:N]
+
+        b00 = b[0:N_2, 0:N_2]
+        b01 = b[0:N_2, N_2:N]
+        b10 = b[N_2:N, 0:N_2]
+        b11 = b[N_2:N, N_2:N]
+
         m1 = mat_mul_strassen(mat_sub(mat_add(a10, a11), a00), mat_add(mat_sub(b11, b01), b00), threshold)
         m2 = mat_mul_strassen(a00, b00, threshold)
         m3 = mat_mul_strassen(a01, b10, threshold)
@@ -75,18 +72,13 @@ def mat_mul_strassen(a, b, threshold):
         m5 = mat_mul_strassen(mat_add(a10, a11), mat_sub(b01, b00), threshold)
         m6 = mat_mul_strassen(mat_add(mat_sub(a01, a10), mat_sub(a00, a11)), b11, threshold)
         m7 = mat_mul_strassen(a11, mat_sub(mat_sub(mat_add(b00, b11), b01), b10), threshold)
+
         c00 = mat_add(m2, m3)
         c01 = mat_add(mat_add(m1, m2), mat_add(m5, m6))
         c10 = mat_sub(mat_add(mat_add(m1, m2), m4), m7)
         c11 = mat_add(mat_add(m1, m2), mat_add(m4, m5))
-        c = [[0 for i in range(len(a))] for j in range(len(a))]
-        for i in range(N):
-            for j in range(N):
-                c[i][j] = c00[i][j]
-                c[i][j + N] = c01[i][j]
-                c[i + N][j] = c10[i][j]
-                c[i + N][j + N] = c11[i][j]
-        return c
+
+        return numpy.concatenate((numpy.concatenate((c00,c10)), numpy.concatenate((c01,c11))), axis=1) 
     else :
         m1 = (a[1][0] + a[1][1] - a[0][0]) * (b[1][1] - b[0][1] + b[0][0])
         m2 = a[0][0] * b[0][0]
