@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for n in {1..12}
+for n in {1..10}
 do
     echo "Multiplication conventionnelle 2^${n}x2^${n}"
     for (( i = 1; i <= 5; i++ ))
