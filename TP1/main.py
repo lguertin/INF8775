@@ -107,8 +107,8 @@ if __name__=="__main__":
     else:
         c = mat_mul_strassen(a, b, 8)
 
-    if sys.argv.count("-t"):
-        print((time.time() - begin) * 1000)
-
     if sys.argv.count("-p"):
         mat_print(c)
+
+    if sys.argv.count("-t"):
+        print((time.time() - begin) * 1000)
