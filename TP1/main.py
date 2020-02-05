@@ -3,6 +3,8 @@ import numpy
 
 # Afficher une matrice
 def mat_print(m):
+    m = numpy.array(m)
+    m = m.astype(int)
     for row in m:
         print("\t".join(map(str,row)))
 
