@@ -107,7 +107,7 @@ if __name__=="__main__":
     elif algo == "strassen":
         c = mat_mul_strassen(a, b, 0)
     else:
-        c = mat_mul_strassen(a, b, 8)
+        c = mat_mul_strassen(a, b, 16)
 
     if sys.argv.count("-p"):
         mat_print(c)
