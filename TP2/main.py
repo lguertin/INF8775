@@ -55,7 +55,8 @@ def neighbors(size, notes, cout):
     best_d = d
     best_c = c
 
-    n_iterations = 100000
+    n_it_mauvaises = 0
+    n_iterations = 10 ** 5
     for i in range (n_iterations):
         d_curr = copy.deepcopy(d)
         c_curr = copy.deepcopy(c)
@@ -72,6 +73,13 @@ def neighbors(size, notes, cout):
 
         d = d_curr
         c = c_curr
+
+        n_it_mauvaises += n_it_mauvaises
+
+        if n_it_mauvaises >= n_iterations * 10 ** -3:
+            n_it_mauvaises = 0
+            d = best_d
+            c = best_c
 
     return best_d, best_c
 
