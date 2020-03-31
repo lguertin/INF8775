@@ -58,7 +58,7 @@ def neighbors(size, notes, cout):
     n_iterations = (int)(size * 0.1)
     for _ in range (n_iterations):
         rand_d = randint(0, 4)
-        rand_n = randint(0, size - 1)
+        rand_n = randint(0, size - 2)
         
         cost_removed = 0
         cost_added = 0
