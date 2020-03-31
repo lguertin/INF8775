@@ -53,39 +53,29 @@ def neighbors(size, notes, cout):
     d, c = glouton(size, notes, cout)
 
     best_d = d
-    best_c = c
-    best_sum_c = np.sum(best_c)
-    
-    d_curr = copy.deepcopy(d)
-    c_curr = copy.deepcopy(c)
-    sum_c_curr = np.sum(c_curr)
+    sum_c = np.sum(c)
 
-    n_it_mauvaises = 0
-    n_iterations = (int)(size * 0.01)
-    for i in range (n_iterations):
+    n_iterations = (int)(size * 0.1)
+    for _ in range (n_iterations):
         rand_d = randint(0, 4)
-        rand_n = randint(0, size - 2)
+        rand_n = randint(0, size - 1)
         
-        cost_removed = cout[notes[rand_n], d[rand_n], notes[rand_n + 1], rand_d]
-        cost_added = cout[notes[rand_n], d[rand_n], notes[rand_n + 1], rand_d]
+        cost_removed = 0
+        cost_added = 0
 
-        d_curr[rand_n] = rand_d
-        c_curr[rand_n] = cout[notes[rand_n], d[rand_n], notes[rand_n + 1], rand_d]
-        sum_c_curr = sum_c_curr - cost_removed + cost_added
+        if rand_d > 0:
+            cost_removed += cout[notes[rand_n - 1], best_d[rand_n - 1], notes[rand_n], best_d[rand_d]]
+            cost_added += cout[notes[rand_n - 1], best_d[rand_n - 1], notes[rand_n], rand_d]
 
-        if sum_c_curr < best_sum_c:
-            best_d = d_curr
-            best_c = c_curr
-            best_sum_c = sum_c_curr
+        if rand_d < size - 1:
+            cost_removed += cout[notes[rand_n], best_d[rand_n], notes[rand_n + 1], best_d[rand_d + 1]]
+            cost_added += cout[notes[rand_n], rand_d, notes[rand_n + 1], best_d[rand_n + 1]]
 
-        n_it_mauvaises += 1
+        if cost_added < cost_removed:
+            best_d[rand_n] = rand_d
+            sum_c = sum_c - cost_removed + cost_added
 
-        if n_it_mauvaises >= n_iterations * 0.001:
-            n_it_mauvaises = 0
-            d_curr = copy.deepcopy(best_d)
-            c_curr = copy.deepcopy(best_c)
-
-    return best_d, best_c
+    return best_d, sum_c
 
 if __name__=="__main__":
 
@@ -107,7 +97,6 @@ if __name__=="__main__":
         d, c = dynamic_prog(size, notes, cout_transition)
     else:
         d, c = neighbors(size, notes, cout_transition)
-        c = np.sum(c)
 
     if sys.argv.count("-t"):
         print((time.time() - begin) * 1000)
