@@ -58,19 +58,19 @@ def neighbors(size, notes, cout):
     n_iterations = (int)(size * 0.1)
     for _ in range (n_iterations):
         rand_d = randint(0, 4)
-        rand_n = randint(0, size - 1)
+        rand_n = randint(0, size - 2)
         
         cost_removed = 0
         cost_added = 0
 
         if rand_n > 0:
-            cost_removed += cout[notes[rand_n - 1], best_d[rand_n - 1], notes[rand_n], best_d[rand_d]]
+            cost_removed += cout[notes[rand_n - 1], best_d[rand_n - 1], notes[rand_n], best_d[rand_n]]
             cost_added += cout[notes[rand_n - 1], best_d[rand_n - 1], notes[rand_n], rand_d]
-
-        if rand_n < size - 1:
-            cost_removed += cout[notes[rand_n], best_d[rand_n], notes[rand_n + 1], best_d[rand_d + 1]]
+           
+        if rand_n < size - 2:
+            cost_removed += cout[notes[rand_n], best_d[rand_n], notes[rand_n + 1], best_d[rand_n + 1]]
             cost_added += cout[notes[rand_n], rand_d, notes[rand_n + 1], best_d[rand_n + 1]]
-
+           
         if cost_added < cost_removed:
             best_d[rand_n] = rand_d
             c = c - cost_removed + cost_added
