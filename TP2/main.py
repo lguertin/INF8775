@@ -11,21 +11,22 @@ def notes_load(path):
 
 def glouton(size, notes, cout):
     s = []
-    c = copy.deepcopy(cout)
 
-    d = np.unravel_index(np.argmin(c[notes[0], :, notes[1], :], axis=None), (5, 5))
+    d = np.unravel_index(np.argmin(cout[notes[0], :, notes[1], :], axis=None), (5, 5))
 
     s.append((d[0], 0))
-    s.append((d[1], c[notes[0], d[0], notes[1], d[1]]))
+    s.append((d[1], cout[notes[0], d[0], notes[1], d[1]]))
     d1 = d[1]
 
-    while len(c) > 0 and len(s) < size - 1:
+    while len(s) < size - 1:
         i = len(s)
-        d2 = np.argmin(c[notes[i], d1, notes[i + 1], :], axis=None)
-        s.append((d2, c[notes[i], d1, notes[i + 1], d2]))
+        d2 = np.argmin(cout[notes[i], d1, notes[i + 1], :], axis=None)
+        s.append((d2, cout[notes[i], d1, notes[i + 1], d2]))
         d1 = d2
 
-    return map(list, zip(*s))
+    d, c = map(list, zip(*s))
+
+    return d, np.sum(c)
 
 def dynamic_prog(size, notes, cout):
     c = np.zeros((5, size), dtype=int)
@@ -53,7 +54,6 @@ def neighbors(size, notes, cout):
     d, c = glouton(size, notes, cout)
 
     best_d = d
-    sum_c = np.sum(c)
 
     n_iterations = (int)(size * 0.1)
     for _ in range (n_iterations):
@@ -73,9 +73,9 @@ def neighbors(size, notes, cout):
 
         if cost_added < cost_removed:
             best_d[rand_n] = rand_d
-            sum_c = sum_c - cost_removed + cost_added
+            c = c - cost_removed + cost_added
 
-    return best_d, sum_c
+    return best_d, c
 
 if __name__=="__main__":
 
@@ -92,7 +92,6 @@ if __name__=="__main__":
     begin = time.time()
     if algo == "glouton":
         d, c = glouton(size, notes, cout_transition)
-        c = np.sum(c)
     elif algo == "dp":
         d, c = dynamic_prog(size, notes, cout_transition)
     else:
