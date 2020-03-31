@@ -54,32 +54,36 @@ def neighbors(size, notes, cout):
 
     best_d = d
     best_c = c
+    best_sum_c = np.sum(best_c)
+    
+    d_curr = copy.deepcopy(d)
+    c_curr = copy.deepcopy(c)
+    sum_c_curr = np.sum(c_curr)
 
     n_it_mauvaises = 0
     n_iterations = (int)(size * 0.01)
     for i in range (n_iterations):
-        d_curr = copy.deepcopy(d)
-        c_curr = copy.deepcopy(c)
-
         rand_d = randint(0, 4)
         rand_n = randint(0, size - 2)
+        
+        cost_removed = cout[notes[rand_n], d[rand_n], notes[rand_n + 1], rand_d]
+        cost_added = cout[notes[rand_n], d[rand_n], notes[rand_n + 1], rand_d]
 
         d_curr[rand_n] = rand_d
         c_curr[rand_n] = cout[notes[rand_n], d[rand_n], notes[rand_n + 1], rand_d]
+        sum_c_curr = sum_c_curr - cost_removed + cost_added
 
-        if np.sum(c_curr) < np.sum(best_c):
+        if sum_c_curr < best_sum_c:
             best_d = d_curr
             best_c = c_curr
+            best_sum_c = sum_c_curr
 
-        d = d_curr
-        c = c_curr
-
-        n_it_mauvaises += n_it_mauvaises
+        n_it_mauvaises += 1
 
         if n_it_mauvaises >= n_iterations * 0.001:
             n_it_mauvaises = 0
-            d = best_d
-            c = best_c
+            d_curr = copy.deepcopy(best_d)
+            c_curr = copy.deepcopy(best_c)
 
     return best_d, best_c
 
