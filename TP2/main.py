@@ -87,8 +87,6 @@ if __name__=="__main__":
 
     size, notes = notes_load(path)
 
-    s = [] # List tuple (doigt, cout)
-
     begin = time.time()
     if algo == "glouton":
         d, c = glouton(size, notes, cout_transition)
