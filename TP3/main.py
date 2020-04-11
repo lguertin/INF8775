@@ -110,8 +110,8 @@ if __name__=="__main__":
     best_solution_value = len(solution)
     c_solution = copy.deepcopy(solution)
 
+    # Heuristique d'amélioration locale du bfs_glouton
     while(True):
-
         # init var
         has_solution = False
         last_readded_relation = None # Tuple (edge1, edge2)
