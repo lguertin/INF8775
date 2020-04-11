@@ -36,36 +36,11 @@ def sherwood(matrice_adjacence, infectes, k):
 # Ne pas considerer les noeuds avec moins de k relations (k true)
 
 # Starts with infected node, goes in uninfected nodes, check if it is touching more than k infected nodes
-# Parent : infected node
-def search(parent, current_node, nombre_sommets, nombre_infectes, matrice_adjacence, infectes):
-    pass
+def bfs_glouton(matrice_adjacence, infectes):
 
+    solution = []
 
-# Quand k arretes de personnes infectes touchent un autre sommet
-
-if __name__=="__main__":
-
-    k = int(sys.argv[sys.argv.index("-k") + 1])
-    path = sys.argv[sys.argv.index("-e") + 1]
-
-    nombre_sommets, nombre_infectes, matrice_adjacence, infectes = exemplaire_load(path)
-
-    show_best_result_runtime = sys.argv.count("-p") > 0
-
-    # TO REMOVE START
-    # Glouton removing all edges on the infected nodes
-    # sol_max = 0
-    # for i in infectes:
-    #     # print(np.where(matrice_adjacence[i])[0])
-    #     sol_max += len(np.where(matrice_adjacence[i])[0])
-    # print("Maximum relations to remove :", sol_max)
-    # TO REMOVE END
-
-    for i in range(nombre_infectes * k * 5):
-        sherwood(matrice_adjacence, infectes, k)
-    
     for infecte in infectes:
-
         # Parent est en relation avec :
         p_relations = np.where(matrice_adjacence[infecte])[0]
         for p_relation in p_relations:
@@ -81,37 +56,103 @@ if __name__=="__main__":
 
                         edge_1 = c_related_infected[rand_infected]
 
-                        # print(matrice_adjacence[edge_1, p_relation])
-                        # print(matrice_adjacence[p_relation, edge_1])
-                        # print(c_related_infected, child_relations, infectes)
-                        # print(child_relations)
-                        # print(matrice_adjacence[p_relation])
-                        # input()
-
                         matrice_adjacence[edge_1, p_relation] = False
                         matrice_adjacence[p_relation, edge_1] = False
 
                         c_related_infected = np.delete(c_related_infected, rand_infected)
 
                         print(edge_1, p_relation)
+                        solution.append((edge_1, p_relation))
+
+    return solution
+
+def forward(matrice_adjacence, set_sains, set_infectes):
+    """Simule une itération de contamination
+    """
+
+    # Flag d'atteinte du point fixe
+    done = False
+
+    # On mémorise les individus sains et infectés à l'itération précédente
+    anciens_infectes = set_infectes.copy()
+    anciens_sains = set_sains.copy()
+
+    for sommet_sain in anciens_sains:
+        nb_voisins_infectes = 0
+        for node, is_neighbor in enumerate(matrice_adjacence[sommet_sain]):
+            if is_neighbor and node in anciens_infectes:
+                nb_voisins_infectes += 1
+                if nb_voisins_infectes == k:
+                    set_sains.remove(sommet_sain)
+                    set_infectes.add(sommet_sain)
+                    break
+
+    if len(set_infectes) == len(anciens_infectes):
+        done = True
+
+    return set_sains, set_infectes, done
 
 
-    # TO REMOVE START
-    # Get how much better is our solution from glouton
-    # sol_max_2 = 0
-    # for i in infectes:
-    #     print(np.where(matrice_adjacence[i])[0])
-    #     sol_max_2 += len(np.where(matrice_adjacence[i])[0])
-    # print("Relations removed :", sol_max - sol_max_2)
-    # TO REMOVE END
+if __name__=="__main__":
 
+    k = int(sys.argv[sys.argv.index("-k") + 1])
+    path = sys.argv[sys.argv.index("-e") + 1]
 
-    # search(infecte, relation, nombre_sommets, nombre_infectes, matrice_adjacence, infectes)
+    nombre_sommets, nombre_infectes, matrice_adjacence, infectes = exemplaire_load(path)
 
+    show_best_result_runtime = sys.argv.count("-p") > 0
 
-    # while True:
-    #     pass
+    solution = bfs_glouton(matrice_adjacence, infectes)
 
+    infectes = set(infectes)
+    sains = set(range(nombre_sommets)).difference(infectes)
 
-# (t / 50 * n) - 1 ou t est le nombre de cas tolerees
-# =>probleme similaire au 4 reines (approche probabiliste + backtrack)
+    best_solution_value = len(solution)
+    c_solution = copy.deepcopy(solution)
+
+    while(True):
+
+        # init var
+        has_solution = False
+        last_readded_relation = None # Tuple (edge1, edge2)
+
+        while(not has_solution):
+
+            c_infectes = infectes.copy()
+            c_sains = sains.copy()
+
+            try:
+                rand_edge = randint(0, len(c_solution) - 1)
+            except:
+                has_solution = True
+                continue
+
+            last_readded_relation = c_solution[rand_edge]
+            matrice_adjacence[last_readded_relation[0], last_readded_relation[1]] = True
+            matrice_adjacence[last_readded_relation[1], last_readded_relation[0]] = True
+
+            # Propagation
+            done = False
+            while not done:
+                c_sains, c_infectes, done = forward(matrice_adjacence, c_sains, c_infectes)
+
+            # Si plus de la moitié de la population est infectée, la solution est invalide
+            if len(c_infectes) > nombre_sommets / 2:
+                has_solution = True
+            else:
+                c_solution = np.delete(c_solution, rand_edge)
+
+        new_sol_value = len(c_solution)
+        if new_sol_value < best_solution_value:
+            print()
+            for sol in c_solution:
+                print(sol[0], sol[1])
+
+            best_solution_value = new_sol_value
+
+        c_solution = copy.deepcopy(solution)
+
+        for sol in c_solution:
+            matrice_adjacence[sol[0], sol[1]] = False
+            matrice_adjacence[sol[1], sol[0]] = False
+            
